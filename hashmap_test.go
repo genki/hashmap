@@ -110,8 +110,9 @@ func TestResize(t *testing.T) {
 		t.Error("Expected etelemnt count did not match.")
 	}
 
-	if m.Fillrate() != 50 {
-		t.Error("Expecting 50 percent fillrate.")
+	// Using keys, the fill rate is less than 50
+	if m.Fillrate() > 50 {
+		t.Errorf("Expecting 50 or lower percent fillrate. got: %d", m.Fillrate())
 	}
 
 	for i := 0; i < itemCount; i++ {
@@ -140,7 +141,7 @@ func TestStringer(t *testing.T) {
 
 	m.Set(1<<62, unsafe.Pointer(monkey))
 	s = m.String()
-	if s != "[0,4611686018427387904]" {
+	if s != "[4611686018427387904,0]" {
 		t.Error("2 item map as string does not match.")
 	}
 }

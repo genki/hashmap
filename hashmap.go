@@ -74,7 +74,8 @@ func (m *HashMap) getSliceItemForKey(hashedKey uint64) (mapData *hashMapData, it
 }
 
 // Get retrieves an element from the map under given hash key.
-func (m *HashMap) Get(hashedKey uint64) (unsafe.Pointer, bool) {
+func (m *HashMap) Get(key interface{}) (unsafe.Pointer, bool) {
+	hashedKey := Hash(key)
 	// inline HashMap.getSliceItemForKey()
 	mapData := (*hashMapData)(atomic.LoadPointer(&m.mapDataPtr))
 	index := hashedKey >> mapData.keyRightShifts
@@ -83,10 +84,12 @@ func (m *HashMap) Get(hashedKey uint64) (unsafe.Pointer, bool) {
 
 	for entry != nil {
 		if entry.keyHash == hashedKey {
-			if atomic.LoadUint64(&entry.deleted) == 1 { // inline ListElement.Deleted()
-				return nil, false
+			if reflect.DeepEqual(entry.key, key) {
+				if atomic.LoadUint64(&entry.deleted) == 1 { // inline ListElement.Deleted()
+					return nil, false
+				}
+				return atomic.LoadPointer(&entry.value), true // inline ListElement.Value()
 			}
-			return atomic.LoadPointer(&entry.value), true // inline ListElement.Value()
 		}
 
 		if entry.keyHash > hashedKey {
@@ -99,11 +102,14 @@ func (m *HashMap) Get(hashedKey uint64) (unsafe.Pointer, bool) {
 }
 
 // Del deletes the hashed key from the map.
-func (m *HashMap) Del(hashedKey uint64) {
+func (m *HashMap) Del(key interface{}) {
+	hashedKey := Hash(key)
 	for _, entry := m.getSliceItemForKey(hashedKey); entry != nil; entry = entry.Next() {
 		if entry.keyHash == hashedKey {
-			m.linkedList.Delete(entry)
-			return
+			if reflect.DeepEqual(entry.key, key) {
+				m.linkedList.Delete(entry)
+				return
+			}
 		}
 
 		if entry.keyHash > hashedKey {
@@ -115,9 +121,10 @@ func (m *HashMap) Del(hashedKey uint64) {
 // Set sets the value under the specified hash key to the map. An existing item for this key will be overwritten.
 // Do not use non hashes as keys for this function, the performance would decrease!
 // If a resizing operation is happening concurrently while calling Set, the item might show up in the map only after the resize operation is finished.
-func (m *HashMap) Set(hashedKey uint64, value unsafe.Pointer) {
+func (m *HashMap) Set(key interface{}, value unsafe.Pointer) {
+	hashedKey := Hash(key)
 	newEntry := &ListElement{
-		key:     hashedKey,
+		key:     key,
 		keyHash: hashedKey,
 		value:   value,
 	}
@@ -146,9 +153,10 @@ func (m *HashMap) Set(hashedKey uint64, value unsafe.Pointer) {
 	}
 }
 
-func (m *HashMap) Cas(hashedKey uint64, from, to unsafe.Pointer) bool {
+func (m *HashMap) Cas(key interface{}, from, to unsafe.Pointer) bool {
+	hashedKey := Hash(key)
 	newEntry := &ListElement{
-		key:     hashedKey,
+		key:     key,
 		keyHash: hashedKey,
 		value:   to,
 	}
@@ -263,7 +271,7 @@ func (m *HashMap) String() string {
 			if item != first {
 				buffer.WriteRune(',')
 			}
-			fmt.Fprint(buffer, item.keyHash)
+			fmt.Fprint(buffer, item.key)
 		}
 
 		item = item.Next()
