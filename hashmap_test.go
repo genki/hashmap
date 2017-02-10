@@ -123,8 +123,8 @@ func TestResize(t *testing.T) {
 	}
 
 	// Using keys, the fill rate is less than 50
-	if m.Fillrate() > 50 {
-		t.Errorf("Expecting 50 or lower percent fillrate. got: %d", m.Fillrate())
+	if m.Fillrate() != 50 {
+		t.Errorf("Expecting 50 percent fillrate. got: %d", m.Fillrate())
 	}
 
 	for i := 0; i < itemCount; i++ {
