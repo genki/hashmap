@@ -65,7 +65,7 @@ func (l *List) Cas(newElement *ListElement, oldValue unsafe.Pointer, searchStart
 				atomic.AddUint64(&l.count, 1)
 			}
 			return true
-		}else{
+		} else {
 			return false
 		}
 	} else if oldValue == nil {
