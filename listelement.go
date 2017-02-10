@@ -8,7 +8,7 @@ import (
 // ListElement is an element of the list.
 type ListElement struct {
 	nextElement unsafe.Pointer
-	key         interface{}
+	key         Key
 	keyHash     uint64
 	value       unsafe.Pointer
 	deleted     uint64 // for the root and all deleted items this is set to 1

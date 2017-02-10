@@ -2,9 +2,6 @@ package hashmap
 
 import (
 	"strconv"
-	"encoding/gob"
-	"bytes"
-	"github.com/spaolacci/murmur3"
 )
 
 // intSizeBytes is the size in byte of an int or uint value.
@@ -30,21 +27,4 @@ func log2(i uint64) uint64 {
 		n++
 	}
 	return n
-}
-
-func Hash(key interface{}) uint64 {
-	switch key.(type) {
-	case []byte: return murmur3.Sum64(key.([]byte))
-	default:
-		if hashable, ok := key.(interface{Hash() uint64}); ok {
-			return hashable.Hash()
-		} else {
-			var buf bytes.Buffer
-			enc := gob.NewEncoder(&buf)
-			if err := enc.Encode(key); err != nil {
-				panic("Unsupported key type.")
-			}
-			return murmur3.Sum64(buf.Bytes())
-		}
-	}
 }
