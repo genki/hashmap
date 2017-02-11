@@ -107,20 +107,22 @@ func (m *HashMap) Get(key Key) (unsafe.Pointer, bool) {
 }
 
 // Del deletes the hashed key from the map.
-func (m *HashMap) Del(key Key) {
+func (m *HashMap) Del(key Key) (unsafe.Pointer, bool) {
 	hashedKey := key.Hash()
 	for _, entry := m.getSliceItemForKey(hashedKey); entry != nil; entry = entry.Next() {
 		if entry.keyHash == hashedKey {
 			if entry.key.Equal(key) {
+        value := atomic.LoadPointer(&entry.value)
 				m.linkedList.Delete(entry)
-				return
+				return value, true
 			}
 		}
 
 		if entry.keyHash > hashedKey {
-			return
+      break
 		}
 	}
+  return nil, false
 }
 
 // Set sets the value under the specified hash key to the map. An existing item for this key will be overwritten.

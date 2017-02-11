@@ -166,18 +166,24 @@ func TestDelete(t *testing.T) {
 	monkey := &Animal{"monkey"}
 	m.Set(K{1}, unsafe.Pointer(elephant))
 	m.Set(K{2}, unsafe.Pointer(monkey))
-	m.Del(K{0})
+  v0, ok := m.Del(K{0})
 	m.Del(K{3})
 	if m.Len() != 2 {
 		t.Error("map should contain exactly two elements.")
 	}
+  if v0 != nil {
+    t.Error("Del returns not nil")
+  }
 
-	m.Del(K{1})
+  v1, ok := m.Del(K{1})
 	m.Del(K{1})
 	m.Del(K{2})
 	if m.Len() != 0 {
 		t.Error("map should be empty.")
 	}
+  if v1 != unsafe.Pointer(elephant) {
+    t.Errorf("Del returns not elephant: %v", v1)
+  }
 
 	val, ok := m.Get(K{1}) // Get a missing element.
 	if ok == true {
