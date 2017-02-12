@@ -112,6 +112,7 @@ func (m *HashMap) Del(key Key) (unsafe.Pointer, bool) {
 	for _, entry := m.getSliceItemForKey(hashedKey); entry != nil; entry = entry.Next() {
 		if entry.keyHash == hashedKey {
 			if entry.key.Equal(key) {
+        if entry.Deleted() {return nil, false}
         value := atomic.LoadPointer(&entry.value)
 				m.linkedList.Delete(entry)
 				return value, true
