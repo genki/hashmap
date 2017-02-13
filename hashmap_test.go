@@ -228,10 +228,10 @@ func TestCompareAndSwap(t *testing.T) {
 	if m.Len() != 1 {
 		t.Error("map should contain exactly one element.")
 	}
-	if !m.Cas(K{1<<62}, unsafe.Pointer(elephant), unsafe.Pointer(monkey)) {
+	if !m.Cas(K{1<<62}, unsafe.Pointer(monkey), unsafe.Pointer(elephant), true) {
 		t.Error("Cas should success if expectation met")
 	}
-	if m.Cas(K{1<<62}, unsafe.Pointer(elephant), unsafe.Pointer(monkey)) {
+	if m.Cas(K{1<<62}, unsafe.Pointer(monkey), unsafe.Pointer(elephant), true) {
 		t.Error("Cas should fail if expectation didn't meet")
 	}
 	tmp, ok := m.Get(K{1 << 62})

@@ -161,7 +161,7 @@ func (m *HashMap) Set(key Key, value unsafe.Pointer) {
 	}
 }
 
-func (m *HashMap) Cas(key Key, from, to unsafe.Pointer) bool {
+func (m *HashMap) Cas(key Key, to, from unsafe.Pointer, exist bool) bool {
 	hashedKey := key.Hash()
 	newEntry := &ListElement{
 		key:     key,
@@ -171,7 +171,7 @@ func (m *HashMap) Cas(key Key, from, to unsafe.Pointer) bool {
 
 	for {
 		mapData, sliceItem := m.getSliceItemForKey(hashedKey)
-		if !m.linkedList.Cas(newEntry, from, sliceItem) {
+		if !m.linkedList.Cas(newEntry, from, exist, sliceItem) {
 			return false
 		}
 
